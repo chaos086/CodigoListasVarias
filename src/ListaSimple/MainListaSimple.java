@@ -1,8 +1,9 @@
-import ListaSimple.ListaSimple;
+package ListaSimple;
+
 import java.util.Scanner;
 
 /**
- * MainListaSimple
+ * ListaSimple.MainListaSimple
  *
  * Español: Programa principal para probar ListaSimple paso a paso con mensajes en consola.
  */
