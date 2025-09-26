@@ -1,11 +1,11 @@
 package ListaSimple;
 
-class Nodo {
-    int dato;
-    Nodo siguiente;
+class Nodo <T> {
+    T data;
+    Nodo<T> next;
 
-    public Nodo(int dato) {
-        this.dato = dato;
-        this.siguiente = null;
+    public Nodo(T data) {
+        this.data = data;
+        this.next = null;
     }
 }
