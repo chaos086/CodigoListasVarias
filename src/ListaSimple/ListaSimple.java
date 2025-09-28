@@ -2,12 +2,7 @@
 
     import java.util.Iterator;
 
-    /**
-     * ListaSimple - Generic Singly Linked List
-     *
-     * Español: Esta clase implementa una lista simplemente enlazada genérica con varias operaciones.
-     * English: This class implements a generic singly linked list with multiple operations.
-     */
+
     public class ListaSimple<T extends Comparable<T>> implements Iterable<T> {
         public Nodo<T> head;
         private int size;
@@ -182,20 +177,20 @@
             size = 0;
         }
 
-        public Nodo<T> invertirRecursivo(Nodo<T> nodo) {
+        public Nodo<T> invertirRecursivo(Nodo<T> nodo, Nodo<T> nodo2) {
             if (nodo == null || nodo.next == null) {
                 return nodo;
             }
 
-            Nodo<T> nuevaCabeza = invertirRecursivo(nodo.next);
+            Nodo<T> nuevaCabeza = invertirRecursivo(nodo.next,nodo);
 
-            nodo.next.next = nodo;
-            nodo.next = null;
+            nodo.next = nodo2;
+            nodo2.next = null;
 
             return nuevaCabeza;
         }
 
         public void invertir() {
-            head = invertirRecursivo(head);
+            head = invertirRecursivo(head,null);
         }
     }

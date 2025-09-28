@@ -1,8 +1,8 @@
 package ListaSimple;
 
-class Nodo <T> {
-    T data;
-    Nodo<T> next;
+public class Nodo <T> {
+    public T data;
+    public Nodo<T> next;
 
     public Nodo(T data) {
         this.data = data;

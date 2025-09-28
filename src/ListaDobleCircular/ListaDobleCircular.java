@@ -1,87 +1,96 @@
-package ListaSimpleCircular;
+package ListaDobleCircular;
 
-import ListaSimple.Nodo;
+import ListaDoble.NodoDoble;
 
-public class ListaSimpleCircular<T> {
-    private Nodo<T> head;
-    private Nodo<T> tail;
+import java.util.Iterator;
+
+public class ListaDobleCircular<T> implements Iterable<T> {
+    private NodoDoble<T> head;
+    private NodoDoble<T> tail;
     private int size;
 
-    public ListaSimpleCircular() {
-        head = null;
-        tail = null;
+    public ListaDobleCircular() {
+        head = tail = null;
         size = 0;
     }
 
     // 1. Agregar al inicio
     public void agregarInicio(T data) {
-        Nodo<T> nuevo = new Nodo<>(data);
+        NodoDoble<T> nuevo = new NodoDoble<>(data);
         if (head == null) {
             head = tail = nuevo;
-            tail.next = head;
+            head.next = head.prev = head;
         } else {
             nuevo.next = head;
+            nuevo.prev = tail;
+            head.prev = nuevo;
+            tail.next = nuevo;
             head = nuevo;
-            tail.next = head;
         }
         size++;
     }
 
     // 2. Agregar al final
     public void agregarFinal(T data) {
-        Nodo<T> nuevo = new Nodo<>(data);
-        if (head == null) {
+        NodoDoble<T> nuevo = new NodoDoble<>(data);
+        if (tail == null) {
             head = tail = nuevo;
-            tail.next = head;
+            head.next = head.prev = head;
         } else {
+            nuevo.prev = tail;
+            nuevo.next = head;
             tail.next = nuevo;
+            head.prev = nuevo;
             tail = nuevo;
-            tail.next = head;
         }
         size++;
     }
 
-    // 3. Agregar en posición específica
+    // 3. Agregar en posición
     public void agregar(int index, T data) {
         if (!indiceValido(index)) throw new IndexOutOfBoundsException();
-        if (index == 0) {
-            agregarInicio(data);
-            return;
-        }
-        if (index == size) {
-            agregarFinal(data);
-            return;
-        }
+        if (index == 0) { agregarInicio(data); return; }
+        if (index == size) { agregarFinal(data); return; }
 
-        Nodo<T> nuevo = new Nodo<>(data);
-        Nodo<T> actual = head;
-        for (int i = 0; i < index - 1; i++) actual = actual.next;
-        nuevo.next = actual.next;
-        actual.next = nuevo;
+        NodoDoble<T> nuevo = new NodoDoble<>(data);
+        NodoDoble<T> actual = obtenerNodo(index);
+        NodoDoble<T> anterior = actual.prev;
+
+        anterior.next = nuevo;
+        nuevo.prev = anterior;
+        nuevo.next = actual;
+        actual.prev = nuevo;
         size++;
     }
 
-    // 4. Obtener valor nodo en índice
+    // 4. Obtener valor nodo
     public T obtenerValorNodo(int index) {
         return obtenerNodo(index).data;
     }
 
     // 5. Obtener nodo
-    private Nodo<T> obtenerNodo(int index) {
+    private NodoDoble<T> obtenerNodo(int index) {
         if (!indiceValido(index)) throw new IndexOutOfBoundsException();
-        Nodo<T> actual = head;
-        for (int i = 0; i < index; i++) actual = actual.next;
+        NodoDoble<T> actual = head;
+        if (index < size / 2) {
+            for (int i = 0; i < index; i++) actual = actual.next;
+        } else {
+            actual = tail;
+            for (int i = size - 1; i > index; i--) actual = actual.prev;
+        }
         return actual;
     }
 
     // 6. Obtener posición de un valor
     public int obtenerPosicionNodo(T data) {
+        NodoDoble<T> actual = head;
+        int index = 0;
         if (head == null) return -1;
-        Nodo<T> actual = head;
-        for (int i = 0; i < size; i++) {
-            if (actual.data.equals(data)) return i;
+        do {
+            if (actual.data.equals(data)) return index;
             actual = actual.next;
-        }
+            index++;
+        } while (actual != head);
         return -1;
     }
 
@@ -91,9 +100,7 @@ public class ListaSimpleCircular<T> {
     }
 
     // 8. Está vacía
-    public boolean estaVacia() {
-        return size == 0;
-    }
+    public boolean estaVacia() { return size == 0; }
 
     // 9. Eliminar primero
     public void eliminarPrimero() {
@@ -102,6 +109,7 @@ public class ListaSimpleCircular<T> {
             head = tail = null;
         } else {
             head = head.next;
+            head.prev = tail;
             tail.next = head;
         }
         size--;
@@ -109,14 +117,13 @@ public class ListaSimpleCircular<T> {
 
     // 10. Eliminar último
     public void eliminarUltimo() {
-        if (head == null) return;
+        if (tail == null) return;
         if (head == tail) {
             head = tail = null;
         } else {
-            Nodo<T> actual = head;
-            while (actual.next != tail) actual = actual.next;
-            actual.next = head;
-            tail = actual;
+            tail = tail.prev;
+            tail.next = head;
+            head.prev = tail;
         }
         size--;
     }
@@ -124,23 +131,18 @@ public class ListaSimpleCircular<T> {
     // 11. Eliminar por valor
     public void eliminar(T data) {
         if (head == null) return;
-
-        if (head.data.equals(data)) {
-            eliminarPrimero();
-            return;
-        }
-        Nodo<T> actual = head;
-        while (actual.next != head && !actual.next.data.equals(data)) {
-            actual = actual.next;
-        }
-        if (actual.next.data.equals(data)) {
-            if (actual.next == tail) {
-                eliminarUltimo();
-            } else {
-                actual.next = actual.next.next;
+        NodoDoble<T> actual = head;
+        do {
+            if (actual.data.equals(data)) {
+                if (actual == head) { eliminarPrimero(); return; }
+                if (actual == tail) { eliminarUltimo(); return; }
+                actual.prev.next = actual.next;
+                actual.next.prev = actual.prev;
                 size--;
+                return;
             }
-        }
+            actual = actual.next;
+        } while (actual != head);
     }
 
     // 12. Modificar nodo
@@ -149,20 +151,19 @@ public class ListaSimpleCircular<T> {
     }
 
     // 13. Ordenar lista (burbuja)
+    @SuppressWarnings("unchecked")
     public void ordenarLista() {
         if (size <= 1) return;
         for (int i = 0; i < size; i++) {
-            Nodo<T> actual = head;
-            Nodo<T> siguiente = head.next;
+            NodoDoble<T> actual = head;
             for (int j = 0; j < size - 1; j++) {
                 Comparable<T> a = (Comparable<T>) actual.data;
-                if (a.compareTo(siguiente.data) > 0) {
+                if (a.compareTo(actual.next.data) > 0) {
                     T temp = actual.data;
-                    actual.data = siguiente.data;
-                    siguiente.data = temp;
+                    actual.data = actual.next.data;
+                    actual.next.data = temp;
                 }
-                actual = siguiente;
-                siguiente = siguiente.next;
+                actual = actual.next;
             }
         }
     }
@@ -173,28 +174,28 @@ public class ListaSimpleCircular<T> {
             System.out.println("Lista vacía");
             return;
         }
-        Nodo<T> actual = head;
+        NodoDoble<T> actual = head;
         do {
-            System.out.print(actual.data + " -> ");
+            System.out.print(actual.data + " <-> ");
             actual = actual.next;
         } while (actual != head);
         System.out.println("(circular)");
     }
 
     // 15. Iterador
-    public java.util.Iterator<T> iterator() {
-        return new java.util.Iterator<T>() {
-            Nodo<T> actual = head;
-            int count = 0;
+    public Iterator<T> iterator() {
+        return new Iterator<T>() {
+            NodoDoble<T> actual = head;
+            boolean primerPaso = true;
 
             public boolean hasNext() {
-                return count < size;
+                return actual != null && (primerPaso || actual != head);
             }
 
             public T next() {
                 T data = actual.data;
                 actual = actual.next;
-                count++;
+                primerPaso = false;
                 return data;
             }
         };
